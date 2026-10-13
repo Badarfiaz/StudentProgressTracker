@@ -39,7 +39,7 @@ function TrendTooltip({ active, payload }: { active?: boolean; payload?: { paylo
 
 export function TrendChart({ data }: { data: TrendPoint[] }) {
   return (
-    <ResponsiveContainer width="100%" height={260}>
+    <ResponsiveContainer width="100%" height={230}>
       <LineChart data={data} margin={{ top: 10, right: 12, left: -18, bottom: 0 }}>
         <CartesianGrid stroke={LINE} vertical={false} />
         <XAxis dataKey="date" tickFormatter={(d) => formatDate(d, false)} tick={{ fill: FAINT, fontSize: 12 }} axisLine={false} tickLine={false} minTickGap={24} />
@@ -65,7 +65,7 @@ export function SubjectCompareChart({ subjects }: { subjects: SubjectSummary[] }
       <BarChart data={data} layout="vertical" margin={{ top: 0, right: 16, left: 8, bottom: 0 }} barGap={2}>
         <CartesianGrid stroke={LINE} horizontal={false} />
         <XAxis type="number" domain={[0, 100]} tick={{ fill: FAINT, fontSize: 12 }} axisLine={false} tickLine={false} />
-        <YAxis type="category" dataKey="name" width={96} tick={{ fill: INK, fontSize: 13 }} axisLine={false} tickLine={false} />
+        <YAxis type="category" dataKey="name" width={84} tick={{ fill: INK, fontSize: 12 }} axisLine={false} tickLine={false} />
         <Tooltip cursor={{ fill: "#F4F6FA" }} formatter={(v: number) => `${v}%`} contentStyle={{ borderRadius: 12, borderColor: LINE }} />
         <Legend iconType="circle" wrapperStyle={{ fontSize: 13 }} />
         <Bar dataKey="Student" fill={INK} radius={[0, 6, 6, 0]} barSize={14} />

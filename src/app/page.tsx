@@ -36,7 +36,7 @@ export default function OverviewPage() {
     : "";
 
   return (
-    <div className="space-y-8">
+    <div className="flex flex-col gap-6 sm:gap-8">
       {/* Hero: the student, and their newest grades as a report strip */}
       <section className="animate-rise">
         <p className="text-sm font-semibold text-ink-soft">
@@ -44,12 +44,12 @@ export default function OverviewPage() {
           {classLine && <span className="text-ink-faint">, {classLine}</span>}
         </p>
         <div className="flex flex-wrap items-start justify-between gap-3">
-          <h1 className="mt-1 text-[clamp(2rem,6vw,3.75rem)] font-extrabold leading-[1.02]">
+          <h1 className="mt-1 min-w-0 break-words text-[clamp(1.75rem,7vw,3.75rem)] font-extrabold leading-[1.05]">
             {titleCase(student.fullName)}
           </h1>
           {records.length > 0 && (
             <button className="btn-outline no-print" onClick={() => window.print()}>
-              <Printer size={16} />Print report
+              <Printer size={16} /><span className="max-sm:sr-only">Print report</span>
             </button>
           )}
         </div>
@@ -57,9 +57,9 @@ export default function OverviewPage() {
 
         {records.length > 0 ? (
           <div className="mt-6 -mx-4 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
-            <ol className="flex min-w-max gap-2.5" aria-label="Latest results">
+            <ol className="flex min-w-max snap-x gap-2.5" aria-label="Latest results">
               {records.slice(0, 6).map((r) => (
-                <li key={r.id} className="flex items-center gap-3 rounded-2xl border border-line bg-white py-2.5 pl-2.5 pr-4">
+                <li key={r.id} className="flex snap-start items-center gap-3 rounded-2xl border border-line bg-white py-2.5 pl-2.5 pr-4">
                   <GradeBadge grade={r.grade} />
                   <div className="leading-tight">
                     <p className="text-sm font-bold">{titleCase(r.subject)}</p>
@@ -87,7 +87,7 @@ export default function OverviewPage() {
           {insights && <SummaryCard insights={insights} />}
 
           {/* Key numbers: one panel, divided, not four separate cards */}
-          <section className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-line bg-line lg:grid-cols-4">
+          <section className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-line bg-line lg:grid-cols-4" aria-label="Key numbers">
             <Figure
               label="Average score"
               value={pct(stats.average)}
@@ -107,8 +107,8 @@ export default function OverviewPage() {
             <Figure label="Tests recorded" value={String(stats.total)} note={`${subjects.length} subject${subjects.length === 1 ? "" : "s"}`} />
           </section>
 
-          <section className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
-            <div className="panel p-5 sm:p-6">
+          <section className="order-2 grid gap-4 sm:gap-6 lg:order-none lg:grid-cols-[1.4fr_1fr]">
+            <div className="panel min-w-0 p-4 sm:p-6">
               <Heading title="Scores over time" hint="Dashed line is the class average" />
               {subjects.length > 1 && (
                 <div className="no-print -mx-1 mb-3 flex gap-1.5 overflow-x-auto px-1 pb-1" role="group" aria-label="Show subject">
@@ -128,7 +128,7 @@ export default function OverviewPage() {
               )}
               {trend.length >= 1 ? <TrendChart data={trend} /> : <Quiet>Scores appear after the first test sat.</Quiet>}
             </div>
-            <div className="panel p-5 sm:p-6">
+            <div className="panel min-w-0 p-4 sm:p-6">
               <Heading title="Compared with the class" hint="Average percentage per subject" />
               {subjects.some((s) => s.average !== null) ? (
                 <SubjectCompareChart subjects={subjects} />
@@ -138,9 +138,9 @@ export default function OverviewPage() {
             </div>
           </section>
 
-          <section className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
-            <div className="panel overflow-hidden">
-              <div className="p-5 pb-3 sm:p-6 sm:pb-3">
+          <section className="order-1 grid gap-4 sm:gap-6 lg:order-none lg:grid-cols-[1.4fr_1fr]">
+            <div className="panel min-w-0 overflow-hidden">
+              <div className="p-4 pb-2 sm:p-6 sm:pb-3">
                 <Heading title="Subjects" hint="Strongest first. Tap a subject to see every test. The yellow tick is the class average." />
               </div>
               <ul className="divide-y divide-line">
@@ -148,7 +148,7 @@ export default function OverviewPage() {
                   <li key={s.subjectKey}>
                     <Link
                       href={`/records?subject=${encodeURIComponent(s.subjectKey)}`}
-                      className="grid grid-cols-[1fr_auto] items-center gap-x-4 gap-y-2 px-5 py-4 transition-colors hover:bg-paper sm:grid-cols-[10rem_1fr_auto] sm:px-6"
+                      className="grid grid-cols-[1fr_auto] items-center gap-x-4 gap-y-2 px-4 py-3.5 transition-colors hover:bg-paper sm:grid-cols-[10rem_1fr_auto] sm:px-6 sm:py-4"
                     >
                       <div>
                         <p className="font-bold">{titleCase(s.subject)}</p>
@@ -169,8 +169,8 @@ export default function OverviewPage() {
               </ul>
             </div>
 
-            <div className="space-y-6">
-              <div className="panel p-5 sm:p-6">
+            <div className="space-y-4 sm:space-y-6">
+              <div className="panel p-4 sm:p-6">
                 <Heading title="Grades received" />
                 <ul className="mt-4 space-y-2.5">
                   {grades.map((g) => (
@@ -188,7 +188,7 @@ export default function OverviewPage() {
                 </ul>
               </div>
 
-              <div className="panel p-5 sm:p-6">
+              <div className="panel p-4 sm:p-6">
                 <Heading title="Missed tests" />
                 {absences.length ? (
                   <ul className="mt-3 divide-y divide-line">
@@ -214,9 +214,9 @@ export default function OverviewPage() {
 
 function Figure({ label, value, note, highlight }: { label: string; value: string; note: string; highlight?: boolean }) {
   return (
-    <div className="bg-white p-5 sm:p-6">
-      <p className="text-sm font-semibold text-ink-soft">{label}</p>
-      <p className="mt-1 font-display text-3xl font-extrabold sm:text-4xl">
+    <div className="bg-white p-4 sm:p-6">
+      <p className="text-[13px] font-semibold text-ink-soft sm:text-sm">{label}</p>
+      <p className="mt-1 font-display text-[1.7rem] font-extrabold leading-tight sm:text-4xl">
         <span className={highlight ? "marked" : ""}>{value}</span>
       </p>
       <p className="mt-1 text-xs text-ink-faint sm:text-sm">{note}</p>
@@ -278,14 +278,14 @@ const TONE_TEXT: Record<Tone, string> = { ok: "text-ok", mid: "text-mid", warn: 
 
 function SummaryCard({ insights }: { insights: NonNullable<ReturnType<typeof buildInsights>> }) {
   return (
-    <section className={`animate-rise rounded-2xl border p-5 sm:p-6 ${TONE_BOX[insights.tone]}`} aria-label="Summary">
+    <section className={`animate-rise rounded-2xl border p-4 sm:p-6 ${TONE_BOX[insights.tone]}`} aria-label="Summary">
       <p className="flex items-center gap-2 text-sm font-bold text-ink-soft">
         <Lightbulb size={16} />At a glance
       </p>
-      <h2 className="mt-1 text-xl font-extrabold leading-snug sm:text-2xl">{insights.headline}</h2>
+      <h2 className="mt-1 text-lg font-extrabold leading-snug sm:text-2xl">{insights.headline}</h2>
       <ul className="mt-4 grid gap-2 sm:grid-cols-2">
         {insights.points.map((p) => (
-          <li key={p.text} className="flex items-start gap-2.5 rounded-xl bg-white/70 px-3.5 py-2.5 text-[15px]">
+          <li key={p.text} className="flex items-start gap-2.5 rounded-xl bg-white/70 px-3 py-2.5 text-sm sm:px-3.5 sm:text-[15px]">
             {p.tone === "ok" || p.tone === "mid" ? (
               <CheckCircle2 size={18} className={`mt-0.5 shrink-0 ${TONE_TEXT[p.tone]}`} />
             ) : (
@@ -302,5 +302,5 @@ function SummaryCard({ insights }: { insights: NonNullable<ReturnType<typeof bui
 function Verdict({ p }: { p: number | null }) {
   if (p === null) return null;
   const v = performance(p);
-  return <span className={`hidden rounded-full px-2.5 py-1 text-xs font-bold sm:inline ${TONE_BOX[v.tone]} ${TONE_TEXT[v.tone]}`}>{v.label}</span>;
+  return <span className={`rounded-full border px-2 py-0.5 text-[11px] font-bold sm:px-2.5 sm:py-1 sm:text-xs ${TONE_BOX[v.tone]} ${TONE_TEXT[v.tone]}`}>{v.label}</span>;
 }
