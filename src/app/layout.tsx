@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   description: "Follow your child's test results, subject by subject.",
 };
 
-export const viewport: Viewport = { themeColor: "#1E2A4A", width: "device-width", initialScale: 1 };
+export const viewport: Viewport = { themeColor: "#1E2A4A", width: "device-width", initialScale: 1, viewportFit: "cover" };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

@@ -45,21 +45,21 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const showNav = firebaseConfigured && !!student;
 
   return (
-    <div className="min-h-dvh pb-24 md:pb-0">
+    <div className="min-h-dvh pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-0">
       <header className="sticky top-0 z-30 border-b border-line bg-paper/90 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-6xl items-center gap-6 px-4 sm:px-6">
-          <Link href="/" className="flex items-center gap-2.5 font-display text-lg font-bold">
-            <span className="grid h-9 w-9 place-items-center rounded-xl bg-ink text-marker">
+        <div className="mx-auto flex h-14 max-w-6xl items-center gap-2 px-3 sm:h-16 sm:gap-6 sm:px-6">
+          <Link href="/" className="flex min-w-0 items-center gap-2 font-display text-base font-bold sm:gap-2.5 sm:text-lg">
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-ink text-marker">
               <BookOpenCheck size={19} strokeWidth={2.4} />
             </span>
-            Progress Diary
+            <span className="truncate">Progress Diary</span>
           </Link>
           <button
             type="button"
             onClick={() => setLarge((v) => !v)}
             aria-pressed={large}
             title="Make text bigger"
-            className={`no-print ml-auto flex items-center gap-1.5 rounded-xl border px-3 py-2 text-sm font-semibold md:order-last md:ml-0 ${
+            className={`no-print ml-auto flex items-center gap-1.5 rounded-xl border px-3 py-2.5 text-sm font-semibold md:order-last md:ml-0 ${
               large ? "border-ink bg-ink text-white" : "border-line bg-white text-ink-soft hover:text-ink"
             }`}
           >
@@ -71,7 +71,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               type="button"
               onClick={user ? logout : () => setSignInOpen(true)}
               title={user ? `${user.email ?? ""}${isAdmin ? " (admin)" : ""}` : "Admin sign in"}
-              className="no-print flex items-center gap-1.5 rounded-xl border border-line bg-white px-3 py-2 text-sm font-semibold text-ink-soft hover:text-ink md:order-last"
+              className="no-print flex items-center gap-1.5 rounded-xl border border-line bg-white px-3 py-2.5 text-sm font-semibold text-ink-soft hover:text-ink md:order-last"
             >
               {user ? <LogOut size={16} /> : <LogIn size={16} />}
               <span className="max-sm:sr-only">{user ? "Sign out" : "Sign in"}</span>
@@ -104,11 +104,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <SignIn />
       </Modal>
 
-      <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-10">{content}</main>
+      <main className="mx-auto max-w-6xl overflow-x-clip px-4 py-5 sm:px-6 sm:py-10">{content}</main>
 
-      {showNav && (
+      {firebaseConfigured && (
         <nav
-          className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-white/95 backdrop-blur md:hidden"
+          className="no-print fixed inset-x-0 bottom-0 z-30 border-t border-line bg-white/95 backdrop-blur md:hidden"
           style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
           aria-label="Main"
         >

@@ -239,7 +239,7 @@ export default function UploadPage() {
             />
           ))}
 
-          <div className="sticky bottom-20 z-10 flex flex-col-reverse gap-3 rounded-2xl border border-line bg-white/95 p-3 backdrop-blur sm:flex-row sm:items-center sm:justify-between md:bottom-4">
+          <div className="sticky bottom-[calc(5rem+env(safe-area-inset-bottom))] z-10 flex flex-col-reverse gap-3 rounded-2xl border border-line bg-white/95 p-3 backdrop-blur sm:flex-row sm:items-center sm:justify-between md:bottom-4">
             <button className="btn-ghost" onClick={() => { setItems([]); setSummary(null); setNotice(null); }} disabled={saving}>
               Clear list
             </button>
