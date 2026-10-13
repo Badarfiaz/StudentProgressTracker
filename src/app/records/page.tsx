@@ -9,7 +9,6 @@ import {
   FileUp,
   Loader2,
   Search,
-  SlidersHorizontal,
   Trash2,
   X,
 } from "lucide-react";
@@ -56,7 +55,6 @@ function Records() {
   const [toDelete, setToDelete] = useState<ResultRecord | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [making, setMaking] = useState(false);
-  const [showFilters, setShowFilters] = useState(false);
 
   const setSubject = (key: string) => {
     const sp = new URLSearchParams(params.toString());
@@ -134,7 +132,6 @@ function Records() {
   const avg = sat.length
     ? sat.reduce((a, r) => a + r.percentage!, 0) / sat.length
     : null;
-  const activeCount = [subject !== "all", attendance !== "all", month !== "all"].filter(Boolean).length;
   const hasFilters =
     q || subject !== "all" || attendance !== "all" || month !== "all";
 
@@ -191,75 +188,57 @@ function Records() {
         </div>
       </header>
 
-      <div className="panel space-y-4 p-3 sm:p-4">
-        <div className="flex gap-2">
-          <div className="relative flex-1">
-            <Search size={18} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-faint" />
-            <input
-              type="search"
-              className="field pl-11"
-              placeholder="Search subject, grade, remarks or date"
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              aria-label="Search records"
-            />
-          </div>
-          <button
-            type="button"
-            onClick={() => setShowFilters((v) => !v)}
-            aria-expanded={showFilters}
-            aria-controls="filter-panel"
-            className={`btn shrink-0 border sm:hidden ${activeCount ? "border-ink bg-marker-soft text-ink" : "border-line bg-white text-ink"}`}
-          >
-            <SlidersHorizontal size={16} />
-            Filters
-            {activeCount > 0 && (
-              <span className="grid h-5 min-w-5 place-items-center rounded-full bg-ink px-1 text-xs text-white">{activeCount}</span>
-            )}
-          </button>
+      <div className="panel space-y-3 p-3 sm:p-4">
+        <div className="relative">
+          <Search
+            size={18}
+            className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-faint"
+          />
+          <input
+            type="search"
+            className="field pl-11"
+            placeholder="Search subject, grade, remarks, exam type or date"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            aria-label="Search records"
+          />
         </div>
-
-        <div id="filter-panel" className={`space-y-4 ${showFilters ? "block" : "hidden"} sm:block`}>
-          <FilterGroup label="Subject">
-            <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1 sm:flex-wrap sm:overflow-visible">
-              <Chip active={subject === "all"} onClick={() => setSubject("all")}>All subjects</Chip>
-              {subjects.map(([k, name]) => (
-                <Chip key={k} active={subject === k} onClick={() => setSubject(k)}>{titleCase(name)}</Chip>
-              ))}
-            </div>
-          </FilterGroup>
-
-          <div className="grid gap-4 sm:grid-cols-[auto_1fr_1fr] sm:items-end">
-            <FilterGroup label="Attendance">
-              <div role="group" aria-label="Attendance" className="grid grid-cols-3 rounded-xl bg-paper p-1">
-                {([["all", "All"], ["sat", "Sat"], ["absent", "Absent"]] as [Attendance, string][]).map(([v, label]) => (
-                  <button
-                    key={v}
-                    type="button"
-                    aria-pressed={attendance === v}
-                    onClick={() => setAttendance(v)}
-                    className={`rounded-lg px-4 py-2 text-sm font-semibold transition-colors ${
-                      attendance === v ? "bg-white text-ink shadow-sm ring-1 ring-line" : "text-ink-soft hover:text-ink"
-                    }`}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </FilterGroup>
-            <div className="grid grid-cols-2 gap-3 sm:contents">
-              <Select label="Month" value={month} active={month !== "all"} onChange={setMonth}>
-                <option value="all">Any month</option>
-                {months.map((m) => <option key={m} value={m}>{formatMonth(m)}</option>)}
-              </Select>
-              <Select label="Sort by" value={sort} onChange={(v) => setSort(v as Sort)}>
-                <option value="newest">Newest first</option>
-                <option value="oldest">Oldest first</option>
-                <option value="highest">Highest score</option>
-                <option value="lowest">Lowest score</option>
-              </Select>
-            </div>
-          </div>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <Select label="Subject" value={subject} onChange={setSubject}>
+            <option value="all">All subjects</option>
+            {subjects.map(([k, name]) => (
+              <option key={k} value={k}>
+                {titleCase(name)}
+              </option>
+            ))}
+          </Select>
+          <Select label="Month" value={month} onChange={setMonth}>
+            <option value="all">Any month</option>
+            {months.map((m) => (
+              <option key={m} value={m}>
+                {formatMonth(m)}
+              </option>
+            ))}
+          </Select>
+          <Select
+            label="Attendance"
+            value={attendance}
+            onChange={(v) => setAttendance(v as Attendance)}
+          >
+            <option value="all">Sat and absent</option>
+            <option value="sat">Sat the test</option>
+            <option value="absent">Absent</option>
+          </Select>
+          <Select
+            label="Sort"
+            value={sort}
+            onChange={(v) => setSort(v as Sort)}
+          >
+            <option value="newest">Newest first</option>
+            <option value="oldest">Oldest first</option>
+            <option value="highest">Highest score</option>
+            <option value="lowest">Lowest score</option>
+          </Select>
         </div>
       </div>
 
@@ -367,44 +346,31 @@ function Records() {
   );
 }
 
-function FilterGroup({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="min-w-0">
-      <p className="mb-1.5 px-0.5 text-xs font-bold uppercase tracking-wide text-ink-faint">{label}</p>
-      {children}
-    </div>
-  );
-}
-
-function Chip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={`shrink-0 rounded-full border px-3.5 py-2 text-sm font-semibold transition-colors ${
-        active ? "border-ink bg-ink text-white" : "border-line bg-white text-ink-soft hover:border-ink-faint hover:text-ink"
-      }`}
-    >
-      {children}
-    </button>
-  );
-}
-
 function Select({
-  label, value, onChange, children, active,
-}: { label: string; value: string; onChange: (v: string) => void; children: React.ReactNode; active?: boolean }) {
+  label,
+  value,
+  onChange,
+  children,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  children: React.ReactNode;
+}) {
   return (
-    <label className="relative block min-w-0">
-      <span className="mb-1.5 block px-0.5 text-xs font-bold uppercase tracking-wide text-ink-faint">{label}</span>
+    <label className="relative block">
+      <span className="sr-only">{label}</span>
       <select
-        className={`field cursor-pointer appearance-none truncate pr-9 text-sm font-semibold ${active ? "border-ink bg-marker-soft" : ""}`}
+        className="field cursor-pointer appearance-none pr-9 text-sm font-semibold"
         value={value}
         onChange={(e) => onChange(e.target.value)}
       >
         {children}
       </select>
-      <ChevronDown size={16} className="pointer-events-none absolute bottom-3.5 right-3 text-ink-soft sm:bottom-3" />
+      <ChevronDown
+        size={16}
+        className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-ink-faint"
+      />
     </label>
   );
 }
