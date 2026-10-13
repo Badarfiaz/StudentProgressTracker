@@ -1,0 +1,16 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Open rules for local/personal use. Before sharing the app publicly,
+    // add Firebase Authentication and restrict these to request.auth != null.
+    match /settings/{doc} {
+      allow read, write: if true;
+    }
+    match /students/{regId}/records/{recordId} {
+      allow read, delete: if true;
+      allow create, update: if request.resource.data.regId == regId
+        && request.resource.data.subjectKey is string
+        && request.resource.data.examDateISO is string;
+    }
+  }
+}

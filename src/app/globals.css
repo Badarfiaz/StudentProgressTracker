@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { -webkit-text-size-adjust: 100%; }
+  body { @apply bg-paper text-ink font-sans antialiased; }
+  h1, h2, h3 { @apply font-display; letter-spacing: -0.02em; }
+  :focus-visible { outline: 2px solid #2C6FB7; outline-offset: 2px; border-radius: 6px; }
+  ::selection { background: #FFD84D; color: #1E2A4A; }
+}
+
+@layer components {
+  .panel { @apply bg-white rounded-2xl border border-line; }
+  .btn { @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed; }
+  .btn-primary { @apply btn bg-ink text-white hover:bg-[#2B3A62]; }
+  .btn-ghost { @apply btn text-ink hover:bg-paper; }
+  .btn-outline { @apply btn border border-line bg-white text-ink hover:border-ink-faint; }
+  .field { @apply w-full rounded-xl border border-line bg-white px-3.5 py-2.5 text-[15px] text-ink placeholder:text-ink-faint focus:border-mid focus:outline-none focus:ring-2 focus:ring-mid/20; }
+  .label { @apply block text-sm font-semibold text-ink-soft mb-1.5; }
+  /* Highlighter stroke, the app's one signature mark */
+  .marked { background: linear-gradient(transparent 58%, #FFD84D 58%, #FFD84D 92%, transparent 92%); padding: 0 .08em; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
+
+@keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.animate-rise { animation: rise .35s ease-out both; }
+@keyframes pop { from { opacity: 0; transform: scale(.97); } to { opacity: 1; transform: none; } }
+.animate-pop { animation: pop .18s ease-out both; }
