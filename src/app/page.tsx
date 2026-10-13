@@ -175,7 +175,7 @@ export default function OverviewPage() {
                 <ul className="mt-4 space-y-2.5">
                   {grades.map((g) => (
                     <li key={g.grade} className="flex items-center gap-3">
-                      <GradeBadge grade={g.grade} size="sm" />
+                      <span className="w-16 shrink-0"><GradeBadge grade={g.grade} size="sm" /></span>
                       <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-paper">
                         <div
                           className={`h-full rounded-full ${g.grade === "AB" ? "bg-absent/50" : g.grade === "F" ? "bg-bad" : "bg-ink"}`}

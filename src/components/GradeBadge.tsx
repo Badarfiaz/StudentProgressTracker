@@ -10,13 +10,16 @@ const TONES: Record<GradeTone, string> = {
 
 export function GradeBadge({ grade, size = "md" }: { grade: string; size?: "sm" | "md" | "lg" }) {
   const tone = gradeTone(grade);
-  const sizes = { sm: "h-7 min-w-7 text-xs", md: "h-9 min-w-9 text-sm", lg: "h-14 min-w-14 text-xl" };
+  const absent = tone === "absent";
+  const sizes = absent
+    ? { sm: "h-7 px-2 text-[11px]", md: "h-9 px-2.5 text-xs", lg: "h-14 px-3 text-sm" }
+    : { sm: "h-7 min-w-7 text-xs", md: "h-9 min-w-9 text-sm", lg: "h-14 min-w-14 text-xl" };
   return (
     <span
       className={`inline-grid place-items-center rounded-lg px-1.5 font-display font-bold ${TONES[tone]} ${sizes[size]}`}
       title={tone === "absent" ? "Absent" : `Grade ${grade}`}
     >
-      {tone === "absent" ? "AB" : grade}
+      {absent ? "Absent" : grade}
     </span>
   );
 }

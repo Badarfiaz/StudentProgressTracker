@@ -166,7 +166,7 @@ export async function downloadReport(records: ResultRecord[], student: Student, 
     doc.roundedRect(M, y, CW, h, 3, 3, "FD");
     fill(tone.bg);
     doc.roundedRect(M + 3.5, y + 3.5, 13, 13, 3, 3, "F");
-    text(r.isAbsent ? "AB" : r.grade, M + 10, y + 11.7, 11, tone.fg, true, "center");
+    text(r.isAbsent ? "Absent" : r.grade, M + 10, y + 11.7, r.isAbsent ? 6.5 : 11, tone.fg, true, "center");
 
     text(fit(titleCase(r.subject), 70, 11, true), M + 21, y + 8, 11, INK, true);
     const meta = [formatDate(r.examDateISO), r.examType, r.remarks].filter(Boolean).join("  |  ");
