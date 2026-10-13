@@ -225,8 +225,8 @@ function Records() {
             value={attendance}
             onChange={(v) => setAttendance(v as Attendance)}
           >
-            <option value="all">Sat and absent</option>
-            <option value="sat">Sat the test</option>
+            <option value="all">All </option>
+            <option value="sat">Present</option>
             <option value="absent">Absent</option>
           </Select>
           <Select
@@ -396,9 +396,14 @@ function RecordRow({
       <button
         onClick={onToggle}
         aria-expanded={open}
-        className="grid w-full grid-cols-[auto_1fr_auto] items-center gap-4 px-4 py-3.5 text-left transition-colors hover:bg-paper sm:grid-cols-[auto_1fr_8rem_6rem_auto] sm:px-5"
+        className={`grid w-full items-center gap-4 px-4 py-3.5 text-left transition-colors hover:bg-paper sm:px-5 ${
+          r.isAbsent
+            ? "grid-cols-[1fr_auto] sm:grid-cols-[1fr_8rem_6rem_auto]"
+            : "grid-cols-[auto_1fr_auto] sm:grid-cols-[auto_1fr_8rem_6rem_auto]"
+        }`}
       >
-        <GradeBadge grade={r.grade} />
+        {/* Absent rows say so on the right, so no grade chip on the left */}
+        {!r.isAbsent && <GradeBadge grade={r.grade} />}
         <div className="min-w-0">
           <p className="truncate font-bold">{titleCase(r.subject)}</p>
           <p className="truncate text-sm text-ink-faint">
@@ -406,7 +411,7 @@ function RecordRow({
             {r.examType && `, ${r.examType}`}
             {r.remarks && `, ${r.remarks}`}
           </p>
-          {!r.isAbsent && r.percentage != null && (
+          {r.percentage != null && (
             <p
               className={`text-xs font-bold ${{ ok: "text-ok", mid: "text-mid", warn: "text-warn", bad: "text-bad", absent: "text-absent" }[performance(r.percentage).tone]}`}
             >
@@ -449,7 +454,7 @@ function RecordRow({
               label="Position"
               value={
                 cs?.position
-                  ? `${ordinal(cs.position)} of ${cs.present} who sat`
+                  ? `${ordinal(cs.position)} of ${cs.present} who were present`
                   : "–"
               }
             />
@@ -471,7 +476,7 @@ function RecordRow({
             />
             <Detail
               label="Class attendance"
-              value={cs ? `${cs.present} of ${cs.totalStudents} sat` : "–"}
+              value={cs ? `${cs.present} of ${cs.totalStudents} present` : "–"}
             />
             <Detail
               label="Exam"

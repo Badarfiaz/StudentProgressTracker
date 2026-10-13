@@ -91,7 +91,7 @@ export default function OverviewPage() {
             <Figure
               label="Average score"
               value={pct(stats.average)}
-              note={stats.classAverage !== null ? `Class average ${pct(stats.classAverage)}` : "Across tests sat"}
+              note={stats.classAverage !== null ? `Class average ${pct(stats.classAverage)}` : "Across tests present"}
               highlight
             />
             <Figure
@@ -102,7 +102,7 @@ export default function OverviewPage() {
             <Figure
               label="Typical position"
               value={stats.averagePosition ? ordinal(Math.round(stats.averagePosition)) : "–"}
-              note={stats.sat ? `At or above class average in ${stats.beatClass} of ${stats.sat}` : "No tests sat yet"}
+              note={stats.sat ? `At or above class average in ${stats.beatClass} of ${stats.sat}` : "No tests taken yet"}
             />
             <Figure label="Tests recorded" value={String(stats.total)} note={`${subjects.length} subject${subjects.length === 1 ? "" : "s"}`} />
           </section>

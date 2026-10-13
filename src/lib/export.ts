@@ -90,7 +90,7 @@ export async function downloadReport(records: ResultRecord[], student: Student, 
 
   // Key figures
   const figs: [string, string, string][] = [
-    ["Average score", pct(stats.average), stats.classAverage !== null ? `Class ${pct(stats.classAverage)}` : "Tests sat"],
+    ["Average score", pct(stats.average), stats.classAverage !== null ? `Class ${pct(stats.classAverage)}` : "Tests taken"],
     ["Attendance", pct(stats.attendance), stats.absences ? `Missed ${stats.absences} of ${stats.total}` : "No tests missed"],
     ["Typical position", stats.averagePosition ? ordinal(Math.round(stats.averagePosition)) : "-", "In class"],
     ["Tests", String(stats.total), `${subjects.length} subject${subjects.length === 1 ? "" : "s"}`],
