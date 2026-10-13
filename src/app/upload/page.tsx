@@ -167,6 +167,19 @@ export default function UploadPage() {
         </p>
       </header>
 
+      <ol className="grid gap-2 sm:grid-cols-3" aria-label="How it works">
+        {[
+          ["1", "Choose the PDFs", "The result sheets you got from school."],
+          ["2", "Check the preview", "We find your child's row automatically."],
+          ["3", "Press Save", "Marks are stored. The PDFs are not."],
+        ].map(([n, t, d]) => (
+          <li key={n} className="flex items-start gap-3 rounded-2xl bg-white p-3.5 ring-1 ring-line">
+            <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-marker font-display text-sm font-extrabold">{n}</span>
+            <span className="text-sm leading-snug"><b className="block">{t}</b><span className="text-ink-soft">{d}</span></span>
+          </li>
+        ))}
+      </ol>
+
       <div
         onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
         onDragLeave={() => setDragging(false)}
@@ -176,11 +189,11 @@ export default function UploadPage() {
         } ${saving ? "pointer-events-none opacity-60" : ""}`}
       >
         <UploadCloud className="mx-auto text-ink" size={40} strokeWidth={1.6} />
-        <p className="mt-3 font-display text-xl font-bold">Drag result sheets here</p>
+        <p className="mt-3 font-display text-xl font-bold">Drag result sheets here, or tap the button</p>
         <p className="mt-1 text-sm text-ink-faint">PDF only, {slotsLeft} of {MAX_FILES} slots free</p>
         <button
           type="button"
-          className="btn-primary mt-5"
+          className="btn-primary mt-5 px-6 py-3.5 text-base"
           onClick={() => inputRef.current?.click()}
           disabled={slotsLeft <= 0 || saving}
         >

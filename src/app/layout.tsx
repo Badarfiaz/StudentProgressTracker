@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Atkinson_Hyperlegible, Bricolage_Grotesque } from "next/font/google";
 import "./globals.css";
+import { AuthProvider } from "@/components/AuthProvider";
 import { StudentProvider } from "@/components/StudentProvider";
 import { AppShell } from "@/components/AppShell";
 
@@ -18,9 +19,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${display.variable} ${body.variable}`}>
       <body>
-        <StudentProvider>
-          <AppShell>{children}</AppShell>
-        </StudentProvider>
+        <AuthProvider>
+          <StudentProvider>
+            <AppShell>{children}</AppShell>
+          </StudentProvider>
+        </AuthProvider>
       </body>
     </html>
   );

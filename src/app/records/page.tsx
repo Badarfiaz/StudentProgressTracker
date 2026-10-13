@@ -3,11 +3,14 @@
 import Link from "next/link";
 import { Suspense, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ChevronDown, FileUp, Search, Trash2, X } from "lucide-react";
+import { ChevronDown, Download, FileUp, Loader2, Search, Trash2, X } from "lucide-react";
 import { useStudent } from "@/components/StudentProvider";
+import { useAuth } from "@/components/AuthProvider";
 import { GradeBadge } from "@/components/GradeBadge";
 import { Modal } from "@/components/Modal";
 import { deleteRecord } from "@/lib/records";
+import { downloadReport } from "@/lib/export";
+import { performance } from "@/lib/insights";
 import { formatDate, formatMonth, monthKey, ordinal, pct, titleCase } from "@/lib/format";
 import type { ResultRecord } from "@/lib/types";
 
@@ -24,6 +27,7 @@ export default function RecordsPage() {
 
 function Records() {
   const { student, records } = useStudent();
+  const { isAdmin } = useAuth();
   const router = useRouter();
   const params = useSearchParams();
 
@@ -35,6 +39,7 @@ function Records() {
   const [openId, setOpenId] = useState<string | null>(null);
   const [toDelete, setToDelete] = useState<ResultRecord | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [making, setMaking] = useState(false);
 
   const setSubject = (key: string) => {
     const sp = new URLSearchParams(params.toString());
@@ -94,7 +99,7 @@ function Records() {
   const hasFilters = q || subject !== "all" || attendance !== "all" || month !== "all";
 
   async function confirmDelete() {
-    if (!toDelete || !student) return;
+    if (!toDelete || !student || !isAdmin) return;
     setDeleting(true);
     try {
       await deleteRecord(student.regId, toDelete.id);
@@ -104,16 +109,32 @@ function Records() {
     }
   }
 
+  async function makePdf() {
+    if (!student) return;
+    setMaking(true);
+    try {
+      const note = hasFilters ? "Filtered view" : undefined;
+      await downloadReport(filtered, student, note);
+    } finally {
+      setMaking(false);
+    }
+  }
+
   if (!student) return null;
 
   return (
     <div className="space-y-6">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold sm:text-4xl">Records</h1>
+          <h1 className="text-3xl font-extrabold sm:text-4xl">All tests</h1>
           <p className="mt-1 text-ink-soft">Every saved test for {titleCase(student.fullName)}.</p>
         </div>
-        <Link href="/upload" className="btn-outline"><FileUp size={16} />Add results</Link>
+        <div className="flex gap-2">
+          <button className="btn-outline" onClick={makePdf} disabled={!filtered.length || making}>
+            {making ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}Download PDF
+          </button>
+          <Link href="/upload" className="btn-outline"><FileUp size={16} />Add results</Link>
+        </div>
       </header>
 
       <div className="panel space-y-3 p-3 sm:p-4">
@@ -190,7 +211,7 @@ function Records() {
                     r={r}
                     open={openId === r.id}
                     onToggle={() => setOpenId(openId === r.id ? null : r.id)}
-                    onDelete={() => setToDelete(r)}
+                    onDelete={isAdmin ? () => setToDelete(r) : undefined}
                   />
                 ))}
               </ul>
@@ -239,7 +260,7 @@ function Select({
 
 function RecordRow({
   r, open, onToggle, onDelete,
-}: { r: ResultRecord; open: boolean; onToggle: () => void; onDelete: () => void }) {
+}: { r: ResultRecord; open: boolean; onToggle: () => void; onDelete?: () => void }) {
   const cs = r.classStats;
   const vsClass = !r.isAbsent && cs?.classAverage != null && r.percentage != null ? r.percentage - cs.classAverage : null;
   return (
@@ -255,6 +276,11 @@ function RecordRow({
           <p className="truncate text-sm text-ink-faint">
             {formatDate(r.examDateISO)}{r.examType && `, ${r.examType}`}{r.remarks && `, ${r.remarks}`}
           </p>
+          {!r.isAbsent && r.percentage != null && (
+            <p className={`text-xs font-bold ${{ ok: "text-ok", mid: "text-mid", warn: "text-warn", bad: "text-bad", absent: "text-absent" }[performance(r.percentage).tone]}`}>
+              {performance(r.percentage).label}
+            </p>
+          )}
         </div>
         <p className="hidden text-sm sm:block">
           {r.isAbsent ? <span className="text-absent">Absent</span> : <><span className="font-bold">{r.marks}</span><span className="text-ink-faint"> / {r.totalMarks}</span></>}
@@ -286,9 +312,11 @@ function RecordRow({
               From {r.sourceFileName ?? "an uploaded sheet"}
               {r.updatedAt && `, saved ${new Date(r.updatedAt).toLocaleDateString()}`}
             </p>
-            <button className="btn-ghost px-2.5 py-1.5 text-bad hover:bg-bad-soft" onClick={onDelete}>
-              <Trash2 size={14} />Delete
-            </button>
+            {onDelete && (
+              <button className="btn-ghost px-2.5 py-1.5 text-bad hover:bg-bad-soft" onClick={onDelete}>
+                <Trash2 size={14} />Delete
+              </button>
+            )}
           </div>
         </div>
       )}

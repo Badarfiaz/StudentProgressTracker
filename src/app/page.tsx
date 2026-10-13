@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { useMemo } from "react";
-import { ArrowDownRight, ArrowUpRight, CalendarX2, FileUp, Minus } from "lucide-react";
+import { useMemo, useState } from "react";
+import { ArrowDownRight, ArrowUpRight, CalendarX2, CheckCircle2, FileUp, Lightbulb, Minus, Printer, TriangleAlert } from "lucide-react";
 import { useStudent } from "@/components/StudentProvider";
 import { GradeBadge } from "@/components/GradeBadge";
 import { formatDate, ordinal, pct, titleCase } from "@/lib/format";
+import { buildInsights, performance, type Tone } from "@/lib/insights";
 import { gradeDistribution, overallStats, subjectSummaries, trendSeries } from "@/lib/stats";
 
 const TrendChart = dynamic(() => import("@/components/Charts").then((m) => m.TrendChart), { ssr: false });
@@ -17,7 +18,12 @@ export default function OverviewPage() {
   const stats = useMemo(() => overallStats(records), [records]);
   const subjects = useMemo(() => subjectSummaries(records), [records]);
   const grades = useMemo(() => gradeDistribution(records), [records]);
-  const trend = useMemo(() => trendSeries(records), [records]);
+  const [trendSubject, setTrendSubject] = useState("all");
+  const trend = useMemo(
+    () => trendSeries(trendSubject === "all" ? records : records.filter((r) => r.subjectKey === trendSubject)),
+    [records, trendSubject],
+  );
+  const insights = useMemo(() => (student ? buildInsights(records, student.fullName) : null), [records, student]);
   const latest = records[0];
   const absences = records.filter((r) => r.isAbsent).slice(0, 5);
 
@@ -37,9 +43,17 @@ export default function OverviewPage() {
           Reg. ID {student.regId}
           {classLine && <span className="text-ink-faint">, {classLine}</span>}
         </p>
-        <h1 className="mt-1 text-[clamp(2rem,6vw,3.75rem)] font-extrabold leading-[1.02]">
-          {titleCase(student.fullName)}
-        </h1>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <h1 className="mt-1 text-[clamp(2rem,6vw,3.75rem)] font-extrabold leading-[1.02]">
+            {titleCase(student.fullName)}
+          </h1>
+          {records.length > 0 && (
+            <button className="btn-outline no-print" onClick={() => window.print()}>
+              <Printer size={16} />Print report
+            </button>
+          )}
+        </div>
+        <p className="print-only mt-1 text-sm text-ink-soft">Progress report, printed {new Date().toLocaleDateString()}</p>
 
         {records.length > 0 ? (
           <div className="mt-6 -mx-4 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
@@ -70,6 +84,8 @@ export default function OverviewPage() {
 
       {records.length > 0 && (
         <>
+          {insights && <SummaryCard insights={insights} />}
+
           {/* Key numbers: one panel, divided, not four separate cards */}
           <section className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-line bg-line lg:grid-cols-4">
             <Figure
@@ -94,6 +110,22 @@ export default function OverviewPage() {
           <section className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
             <div className="panel p-5 sm:p-6">
               <Heading title="Scores over time" hint="Dashed line is the class average" />
+              {subjects.length > 1 && (
+                <div className="no-print -mx-1 mb-3 flex gap-1.5 overflow-x-auto px-1 pb-1" role="group" aria-label="Show subject">
+                  {[{ subjectKey: "all", subject: "All subjects" }, ...subjects].map((s) => (
+                    <button
+                      key={s.subjectKey}
+                      onClick={() => setTrendSubject(s.subjectKey)}
+                      aria-pressed={trendSubject === s.subjectKey}
+                      className={`shrink-0 rounded-full border px-3.5 py-1.5 text-sm font-semibold transition-colors ${
+                        trendSubject === s.subjectKey ? "border-ink bg-ink text-white" : "border-line bg-white text-ink-soft hover:border-ink-faint"
+                      }`}
+                    >
+                      {s.subjectKey === "all" ? s.subject : titleCase(s.subject)}
+                    </button>
+                  ))}
+                </div>
+              )}
               {trend.length >= 1 ? <TrendChart data={trend} /> : <Quiet>Scores appear after the first test sat.</Quiet>}
             </div>
             <div className="panel p-5 sm:p-6">
@@ -109,7 +141,7 @@ export default function OverviewPage() {
           <section className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
             <div className="panel overflow-hidden">
               <div className="p-5 pb-3 sm:p-6 sm:pb-3">
-                <Heading title="Subjects" hint="Strongest first. Open one to see every test." />
+                <Heading title="Subjects" hint="Strongest first. Tap a subject to see every test. The yellow tick is the class average." />
               </div>
               <ul className="divide-y divide-line">
                 {subjects.map((s) => (
@@ -128,6 +160,7 @@ export default function OverviewPage() {
                       <ScoreBar value={s.average} classValue={s.classAverage} />
                       <div className="flex items-center gap-2 max-sm:col-start-2 max-sm:row-start-1">
                         <Change value={s.change} />
+                        <Verdict p={s.average} />
                         <GradeBadge grade={s.latest.grade} size="sm" />
                       </div>
                     </Link>
@@ -235,4 +268,39 @@ function Change({ value }: { value: number | null }) {
       {Math.abs(v)}
     </span>
   );
+}
+
+const TONE_BOX: Record<Tone, string> = {
+  ok: "border-ok/30 bg-ok-soft", mid: "border-mid/30 bg-mid-soft", warn: "border-warn/30 bg-warn-soft",
+  bad: "border-bad/30 bg-bad-soft", absent: "border-line bg-absent-soft",
+};
+const TONE_TEXT: Record<Tone, string> = { ok: "text-ok", mid: "text-mid", warn: "text-warn", bad: "text-bad", absent: "text-absent" };
+
+function SummaryCard({ insights }: { insights: NonNullable<ReturnType<typeof buildInsights>> }) {
+  return (
+    <section className={`animate-rise rounded-2xl border p-5 sm:p-6 ${TONE_BOX[insights.tone]}`} aria-label="Summary">
+      <p className="flex items-center gap-2 text-sm font-bold text-ink-soft">
+        <Lightbulb size={16} />At a glance
+      </p>
+      <h2 className="mt-1 text-xl font-extrabold leading-snug sm:text-2xl">{insights.headline}</h2>
+      <ul className="mt-4 grid gap-2 sm:grid-cols-2">
+        {insights.points.map((p) => (
+          <li key={p.text} className="flex items-start gap-2.5 rounded-xl bg-white/70 px-3.5 py-2.5 text-[15px]">
+            {p.tone === "ok" || p.tone === "mid" ? (
+              <CheckCircle2 size={18} className={`mt-0.5 shrink-0 ${TONE_TEXT[p.tone]}`} />
+            ) : (
+              <TriangleAlert size={18} className={`mt-0.5 shrink-0 ${TONE_TEXT[p.tone]}`} />
+            )}
+            <span>{p.text}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+function Verdict({ p }: { p: number | null }) {
+  if (p === null) return null;
+  const v = performance(p);
+  return <span className={`hidden rounded-full px-2.5 py-1 text-xs font-bold sm:inline ${TONE_BOX[v.tone]} ${TONE_TEXT[v.tone]}`}>{v.label}</span>;
 }

@@ -2,21 +2,39 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpenCheck, FileUp, LayoutGrid, ListFilter, UserRound } from "lucide-react";
+import { useEffect, useState } from "react";
+import { BookOpenCheck, FileUp, House, ListFilter, LogIn, LogOut, Type, UserRound } from "lucide-react";
 import { firebaseConfigured } from "@/lib/firebase";
+import { useAuth } from "./AuthProvider";
+import { Modal } from "./Modal";
+import { SignIn } from "./SignIn";
 import { useStudent } from "./StudentProvider";
 import { StudentForm } from "./StudentForm";
 
 const NAV = [
-  { href: "/", label: "Overview", icon: LayoutGrid },
+  { href: "/", label: "Home", icon: House },
   { href: "/upload", label: "Add results", icon: FileUp },
-  { href: "/records", label: "Records", icon: ListFilter },
-  { href: "/settings", label: "Student", icon: UserRound },
+  { href: "/records", label: "All tests", icon: ListFilter },
+  { href: "/settings", label: "My child", icon: UserRound },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { student, loading, error } = useStudent();
+  const { user, isAdmin, logout } = useAuth();
+  const [signInOpen, setSignInOpen] = useState(false);
+  const [large, setLarge] = useState(false);
+
+  useEffect(() => {
+    try { setLarge(localStorage.getItem("pd-large") === "1"); } catch {}
+  }, []);
+  useEffect(() => {
+    if (user) setSignInOpen(false);
+  }, [user]);
+  useEffect(() => {
+    document.documentElement.classList.toggle("large-text", large);
+    try { localStorage.setItem("pd-large", large ? "1" : "0"); } catch {}
+  }, [large]);
 
   let content: React.ReactNode = children;
   if (!firebaseConfigured) content = <SetupNotice />;
@@ -36,6 +54,29 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </span>
             Progress Diary
           </Link>
+          <button
+            type="button"
+            onClick={() => setLarge((v) => !v)}
+            aria-pressed={large}
+            title="Make text bigger"
+            className={`no-print ml-auto flex items-center gap-1.5 rounded-xl border px-3 py-2 text-sm font-semibold md:order-last md:ml-0 ${
+              large ? "border-ink bg-ink text-white" : "border-line bg-white text-ink-soft hover:text-ink"
+            }`}
+          >
+            <Type size={16} />
+            <span className="max-sm:sr-only">{large ? "Normal text" : "Bigger text"}</span>
+          </button>
+          {firebaseConfigured && (
+            <button
+              type="button"
+              onClick={user ? logout : () => setSignInOpen(true)}
+              title={user ? `${user.email ?? ""}${isAdmin ? " (admin)" : ""}` : "Admin sign in"}
+              className="no-print flex items-center gap-1.5 rounded-xl border border-line bg-white px-3 py-2 text-sm font-semibold text-ink-soft hover:text-ink md:order-last"
+            >
+              {user ? <LogOut size={16} /> : <LogIn size={16} />}
+              <span className="max-sm:sr-only">{user ? "Sign out" : "Sign in"}</span>
+            </button>
+          )}
           {showNav && (
             <nav className="ml-auto hidden items-center gap-1 md:flex" aria-label="Main">
               {NAV.map(({ href, label, icon: Icon }) => {
@@ -59,6 +100,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
+      <Modal open={signInOpen} onClose={() => setSignInOpen(false)} title="Admin sign in">
+        <SignIn />
+      </Modal>
+
       <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-10">{content}</main>
 
       {showNav && (
@@ -75,7 +120,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   key={href}
                   href={href}
                   aria-current={active ? "page" : undefined}
-                  className={`flex flex-col items-center gap-1 py-2.5 text-[11px] font-bold ${active ? "text-ink" : "text-ink-faint"}`}
+                  className={`flex flex-col items-center gap-1 py-2.5 text-xs font-bold ${active ? "text-ink" : "text-ink-faint"}`}
                 >
                   <span className={`rounded-full px-4 py-1 ${active ? "bg-marker" : ""}`}>
                     <Icon size={20} />

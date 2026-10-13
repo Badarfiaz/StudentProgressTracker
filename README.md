@@ -58,9 +58,17 @@ The document id is `subject + date`, so a duplicate is detected with a single re
 When one is found, a dialog offers **Update record** or **Cancel**, with an option to
 apply the same choice to the rest of the batch.
 
-## Before going public
+## Admin sign-in
 
-The included rules are open so the app works without sign-in. If you deploy it
-anywhere others can reach, add Firebase Authentication and restrict the rules to
-`request.auth != null` (ideally per-parent), otherwise anyone with the URL can read
-and change the data.
+The app is open to use without an account. The **Sign in** button in the header opens a
+small sign-in dialog (Google or email/password) meant for the admin only.
+
+`badars20plus@gmail.com` is the **super admin**. Only that account, with a verified email,
+can delete records. This is enforced in `firestore.rules`, not just hidden in the UI.
+
+1. Firebase console > **Authentication** > **Sign-in method**: enable **Google** (and **Email/Password**
+   if you want a password; create the admin user under Authentication > Users, since the app has no sign-up).
+2. Publish `firestore.rules`.
+3. Add your deployed domain under Authentication > Settings > Authorized domains.
+
+Anyone with the URL can still view, add and update results. Only deleting is restricted.
